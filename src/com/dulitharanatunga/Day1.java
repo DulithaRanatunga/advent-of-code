@@ -1,20 +1,9 @@
 package com.dulitharanatunga;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Day1 {
-
-    public int runSample() {
-        return calculateIncreases("day1_sample");
-    }
-
-    public int run() {
-       return calculateIncreases("day1");
-    }
+public class Day1 extends Day {
 
     private int part1(List<String> lines) {
         // Challenge: calculate number of lines that are more than the previous.
@@ -59,19 +48,14 @@ public class Day1 {
         return increases;
     }
 
-    private int calculateIncreases(String fileName) {
-        List<String> lines = readInput(fileName);
+    @Override
+    protected int calculate(List<String> lines) {
         // return part1(lines);
         return part2(lines);
     }
 
-    // Reads the input file and returns a list of lines.
-    public List<String> readInput(String fileName) {
-        try {
-            return Files.readAllLines(Path.of("src/resources/" + fileName));
-        } catch (IOException e) {
-            e.printStackTrace();
-            return List.of();
-        }
+    @Override
+    public String getDay() {
+        return "day1";
     }
 }
