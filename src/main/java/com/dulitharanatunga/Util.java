@@ -10,7 +10,7 @@ public class Util {
     // Reads the input file and returns a list of lines.
     public static List<String> readInput(String fileName) {
         try {
-            return Files.readAllLines(Path.of("src/main/java/resources/" + fileName));
+            return Files.readAllLines(Path.of("src/main/java/resources/2022/" + fileName));
         } catch (IOException e) {
             e.printStackTrace();
             return List.of();
