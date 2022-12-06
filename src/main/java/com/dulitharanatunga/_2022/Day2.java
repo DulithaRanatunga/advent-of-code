@@ -68,7 +68,7 @@ public class Day2 extends Day {
     }
 
     @Override
-    protected int calculate(List<String> lines) {
+    protected Integer calculate(List<String> lines) {
         return part2(lines);
     }
 
