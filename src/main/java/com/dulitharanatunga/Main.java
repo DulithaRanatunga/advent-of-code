@@ -5,7 +5,7 @@ import com.dulitharanatunga._2022.*;
 public class Main {
 
     public static void main(String[] args) {
-        Day day = new Day6();
+        Day day = new Day9();
 	    System.out.println("Sample:" + day.runSample());
 	    System.out.println("Full:" + day.run());
     }

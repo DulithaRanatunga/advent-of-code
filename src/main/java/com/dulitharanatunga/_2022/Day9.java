@@ -8,81 +8,83 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class Day8 extends Day {
+public class Day9 extends Day {
 
-
-
-    private int part1(List<String> lines) {
-        int rows = lines.size();
-        int cols = lines.get(0).length();
-        int[][] grid = new int[rows][cols];
-        for (int i =0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                grid[i][j] = Integer.parseInt(lines.get(i).charAt(j) + "");
-            }
-        }
-
-        int highest = 0;
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                int score = checkLeft(i, j, grid) *
-                           checkRight(i,j, grid) *
-                           checkTop(i,j, grid) *
-                           checkDown(i,j, grid);
-                highest = Math.max(score, highest);
-            }
-        }
-        return highest;
+    private enum Dir {
+        L, U, R, D
     }
 
-    // True if not visible
-    // False = visible
-    private int checkLeft(int i, int j, int[][] grid) {
-        int me = grid[i][j];
-        int score = 0;
-        for (int x = j - 1; x >= 0; x--) {
-            score++;
-            if (grid[i][x] >= me) {
-                return score;
-            }
-        }
-        return score;
+    public class Grid {
+        int starti = 0;
+        int startj = 0;
+        int headi = 0;
+        int headj = 0;
+        int taili = 0;
+        int tailj = 0;
     }
 
-    private int checkRight(int i, int j, int[][] grid) {
-        int me = grid[i][j];
-        int score = 0;
-        for (int x = j + 1; x < grid[i].length; x++) {
-            score++;
-            if (grid[i][x] >= me) {
-                return score;
+    private Integer part1(List<String> lines) {
+        HashMap<Integer, Set<Integer>> seen = new HashMap<>();
+        Grid grid = new Grid();
+        int lowestI = 0;
+        int lowestJ = 0;
+        int highestI = 0;
+        int highestJ = 0;
+        for (String line: lines) {
+            final String[] s = line.split(" ");
+            Dir dir = Dir.valueOf(s[0]);
+            for (int i = 0; i < Integer.parseInt(s[1]); i++) {
+                moveHead(dir, grid);
+                moveTail(grid);
+                final Set<Integer> seenSet = seen.getOrDefault(grid.taili, new HashSet<>());
+                seenSet.add(grid.tailj);
+                seen.put(grid.taili, seenSet);
+                lowestI = Math.min(lowestI, grid.headi);
+                lowestJ = Math.min(lowestJ, grid.headj);
+                highestI = Math.max(highestI, grid.headi);
+                highestJ = Math.max(highestJ, grid.headj);
             }
+
         }
-        return score;
+        for (int i = lowestI; i <= highestI; i++) {
+            StringBuilder sb = new StringBuilder();
+            for (int j = lowestJ; j <= highestJ; j++) {
+                if (i == 0 && j == 0) {
+                    sb.append("s");
+                } else {
+                    sb.append(seen.getOrDefault(i, Set.of()).contains(j) ? "#" : ".");
+                }
+            }
+            System.out.println(sb.toString());
+        }
+        return seen.values().stream().collect(Collectors.summingInt(Set::size));
+
     }
 
-    private int checkTop(int i, int j, int[][] grid) {
-        int me = grid[i][j];
-        int score = 0;
-        for (int x = i - 1; x >= 0; x--) {
-            score++;
-            if (grid[x][j] >= me) {
-                return score;
-            }
+    private void moveTail(Grid grid) {
+        int iMove = (grid.headi - grid.taili) / 2;
+        int jMove = (grid.headj - grid.tailj) / 2;
+        grid.taili += iMove;
+        grid.tailj += jMove;
+
+        if (Math.abs(iMove) == 1 && grid.headj != grid.tailj) {
+            // Move diagonal
+            grid.tailj += (grid.headj - grid.tailj);
         }
-        return score;
+
+        if (Math.abs(jMove) == 1 && grid.headi != grid.taili) {
+            // Move diagonal
+            grid.taili += (grid.headi - grid.taili);
+        }
     }
 
-    private int checkDown(int i, int j, int[][] grid) {
-        int me = grid[i][j];
-        int score = 0;
-        for (int x = i + 1; x < grid[i].length; x++) {
-            score++;
-            if (grid[x][j] >= me) {
-                return score;
-            }
+    private void moveHead(Dir dir, Grid grid) {
+        switch (dir) {
+            case L: grid.headj--; break;
+            case R: grid.headj++; break;
+            case U: grid.headi--; break;
+            case D: grid.headi++; break;
         }
-        return score;
     }
 
     @Override
