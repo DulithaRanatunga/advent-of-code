@@ -2,10 +2,7 @@ package com.dulitharanatunga._2022;
 
 import com.dulitharanatunga.Day;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Day9 extends Day {
@@ -15,12 +12,29 @@ public class Day9 extends Day {
     }
 
     public class Grid {
-        int starti = 0;
-        int startj = 0;
-        int headi = 0;
-        int headj = 0;
-        int taili = 0;
-        int tailj = 0;
+        List<Knot> knots = new ArrayList<>();
+        Knot head;
+        Knot tail;
+
+        public Grid() {
+            head = new Knot("H");
+            knots.add(head);
+            for (int i = 1; i <= 8; i++) {
+                knots.add(new Knot(i + ""));
+            }
+            tail = new Knot("T");
+            knots.add(tail);
+        }
+    }
+
+    public class Knot {
+        String label;
+        int i = 0;
+        int j = 0;
+
+        public Knot(String l) {
+            label = l;
+        }
     }
 
     private Integer part1(List<String> lines) {
@@ -35,55 +49,67 @@ public class Day9 extends Day {
             Dir dir = Dir.valueOf(s[0]);
             for (int i = 0; i < Integer.parseInt(s[1]); i++) {
                 moveHead(dir, grid);
-                moveTail(grid);
-                final Set<Integer> seenSet = seen.getOrDefault(grid.taili, new HashSet<>());
-                seenSet.add(grid.tailj);
-                seen.put(grid.taili, seenSet);
-                lowestI = Math.min(lowestI, grid.headi);
-                lowestJ = Math.min(lowestJ, grid.headj);
-                highestI = Math.max(highestI, grid.headi);
-                highestJ = Math.max(highestJ, grid.headj);
+                for (int t = 1; t < grid.knots.size(); t++) {
+                    moveTail(grid.knots.get(t - 1), grid.knots.get(t));
+                }
+                final Set<Integer> seenSet = seen.getOrDefault(grid.tail.i, new HashSet<>());
+                seenSet.add(grid.tail.j);
+                seen.put(grid.tail.i, seenSet);
+                lowestI = Math.min(lowestI, grid.head.i);
+                lowestJ = Math.min(lowestJ, grid.head.j);
+                highestI = Math.max(highestI, grid.head.i);
+                highestJ = Math.max(highestJ, grid.head.j);
+
+
+
+            }
+            for (int printI = lowestI; printI <= highestI; printI++) {
+                StringBuilder sb = new StringBuilder();
+                for (int printJ = lowestJ; printJ <= highestJ; printJ++) {
+                    if (printI == 0 && printJ == 0) {
+                        sb.append("s");
+                    } else {
+                        int finalI = printI;
+                        int finalJ = printJ;
+                        sb.append(grid.knots.stream().filter(k -> k.i == finalI && k.j == finalJ).findFirst().map(l -> l.label).orElse("."));
+//                    sb.append(seen.getOrDefault(i, Set.of()).contains(j) ? "#" : ".");
+                    }
+                }
+                System.out.println(sb);
             }
 
         }
-        for (int i = lowestI; i <= highestI; i++) {
-            StringBuilder sb = new StringBuilder();
-            for (int j = lowestJ; j <= highestJ; j++) {
-                if (i == 0 && j == 0) {
-                    sb.append("s");
-                } else {
-                    sb.append(seen.getOrDefault(i, Set.of()).contains(j) ? "#" : ".");
-                }
-            }
-            System.out.println(sb.toString());
-        }
+
         return seen.values().stream().collect(Collectors.summingInt(Set::size));
 
     }
 
-    private void moveTail(Grid grid) {
-        int iMove = (grid.headi - grid.taili) / 2;
-        int jMove = (grid.headj - grid.tailj) / 2;
-        grid.taili += iMove;
-        grid.tailj += jMove;
+    private void moveTail(Knot head, Knot tail) {
+        int iMove = (head.i - tail.i) / 2;
+        int jMove = (head.j - tail.j) / 2;
+        tail.i += iMove;
+        tail.j += jMove;
 
-        if (Math.abs(iMove) == 1 && grid.headj != grid.tailj) {
-            // Move diagonal
-            grid.tailj += (grid.headj - grid.tailj);
-        }
+        if (Math.abs(iMove) == 1 && Math.abs(jMove) == 1) {
+            // Skip
+        } else {
+            if (Math.abs(iMove) == 1 && head.j != tail.j) {
+                // Move diagonal
+                tail.j += (head.j - tail.j);
+            }
 
-        if (Math.abs(jMove) == 1 && grid.headi != grid.taili) {
-            // Move diagonal
-            grid.taili += (grid.headi - grid.taili);
+            if (Math.abs(jMove) == 1 && head.i != tail.i) {
+                // Move diagonal
+                tail.i += (head.i - tail.i);
+            }
         }
     }
-
     private void moveHead(Dir dir, Grid grid) {
         switch (dir) {
-            case L: grid.headj--; break;
-            case R: grid.headj++; break;
-            case U: grid.headi--; break;
-            case D: grid.headi++; break;
+            case L: grid.head.j--; break;
+            case R: grid.head.j++; break;
+            case U: grid.head.i--; break;
+            case D: grid.head.i++; break;
         }
     }
 

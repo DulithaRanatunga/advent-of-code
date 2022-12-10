@@ -6,7 +6,7 @@ public class Main {
 
     public static void main(String[] args) {
         Day day = new Day9();
-	    System.out.println("Sample:" + day.runSample());
+//	    System.out.println("Sample:" + day.runSample());
 	    System.out.println("Full:" + day.run());
     }
 }
