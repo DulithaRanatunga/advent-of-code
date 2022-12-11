@@ -11,15 +11,15 @@ public class Day11 extends Day {
 
     class Monkey {
         int id;
-        Queue<Integer> queue = new PriorityQueue();
-        Function<Integer, Integer> operation;
-        Function<Integer, Boolean> testFn;
+        LinkedList<Long> queue = new LinkedList<>();
+        Function<Long, Long> operation;
+        int mod;
         Monkey ifTrue;
         Monkey ifFalse;
         int inspected = 0;
     }
 
-    private Integer part1(List<String> lines) {
+    private Long part1(List<String> lines) {
         int monkeys = 0;
         Map<Integer, Monkey> allMonkeys = new HashMap();
 
@@ -27,9 +27,9 @@ public class Day11 extends Day {
             Monkey current = allMonkeys.getOrDefault(monkeys, new Monkey());
             current.id = monkeys;
             Arrays.stream(lines.get(i + 1).substring(18).split(", "))
-                    .forEach(item -> current.queue.add(Integer.parseInt(item)));
+                    .forEach(item -> current.queue.add(Long.parseLong(item)));
             current.operation = parseOperation(lines.get(i+2));
-            current.testFn = parseTestFn(lines.get(i + 3));
+            current.mod = parseTestFn(lines.get(i + 3));
             int tMid = parseTarget(lines.get(i+4));
             current.ifTrue = allMonkeys.getOrDefault((tMid),new Monkey());
             allMonkeys.put(tMid, current.ifTrue);
@@ -40,40 +40,45 @@ public class Day11 extends Day {
             monkeys++;
         }
 
-        for (int round = 0; round < 20; round++) {
+        int superModulo = 1;
+        for (int m : allMonkeys.values().stream().map(x -> x.mod).collect(Collectors.toList())) {
+            superModulo *= m;
+        }
+        for (int round = 0; round < 10000; round++) {
             for (int i = 0; i < monkeys; i++) {
                 Monkey m = allMonkeys.get(i);
                 while(!m.queue.isEmpty()) {
                     m.inspected++;
-                    int worry = m.operation.apply(m.queue.poll());
-                    worry = worry / 3;
-                    (m.testFn.apply(worry) ? m.ifTrue : m.ifFalse).queue.add(worry);
+                    Long worry = m.operation.apply(m.queue.poll());
+                    worry = worry % superModulo;
+//                    worry = worry / 1;
+                    (worry % m.mod == 0 ? m.ifTrue : m.ifFalse).queue.add(worry);
                 }
             }
         }
 
-        final List<Integer> collect = allMonkeys.values().stream().map(m -> m.inspected).sorted(Comparator.reverseOrder()).limit(2).collect(Collectors.toList());
-        return collect.get(0) * collect.get(1);
+        final List<Integer> collect = allMonkeys.values().stream().map(m -> m.inspected).sorted(Comparator.reverseOrder()).collect(Collectors.toList());
+        System.out.println(collect);
+        Long rval = collect.get(0).longValue() * collect.get(1).longValue();
+        return rval;
     }
 
-    private Function<Integer, Integer> parseOperation(String s) {
+    private Function<Long, Long> parseOperation(String s) {
         String[] split = s.split(" ");
         String operation = split[split.length - 2];
         String operand = split[split.length - 1];
-        Function<Integer, Integer> parsedOperand = (i -> operand.equals("old") ? i : Integer.parseInt(operand));
+        Function<Long, Long> parsedOperand = (i -> operand.equals("old") ? i : Long.parseLong(operand));
         switch (operation) {
             case "*": return (i -> i * parsedOperand.apply(i));
             case "+": return (i -> i + parsedOperand.apply(i));
-            case "-": return (i -> i - parsedOperand.apply(i));
-            case "/": return (i -> i / parsedOperand.apply(i));
             default:
-                return i -> i;
+                throw new RuntimeException("HUH");
         }
     }
 
-    private Function<Integer, Boolean> parseTestFn(String s) {
+    private int parseTestFn(String s) {
         String[] divisibleBy = s.split(" ");
-        return (i -> i % Integer.parseInt(divisibleBy[divisibleBy.length - 1]) == 0);
+        return Integer.parseInt(divisibleBy[divisibleBy.length - 1]);
     }
 
     private int parseTarget(String s) {
@@ -82,7 +87,7 @@ public class Day11 extends Day {
     }
 
     @Override
-    protected Integer calculate(List<String> lines) {
+    protected Long calculate(List<String> lines) {
         return part1(lines);
     }
 
