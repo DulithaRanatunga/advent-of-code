@@ -10,7 +10,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="advent-of-code" target="11" />
+      <module name="advent-of-code" target="17" />
     </bytecodeTargetLevel>
   </component>
 </project>
